@@ -1,7 +1,7 @@
-import { Container } from '@mui/material';
+import { Box, Container } from '@mui/material';
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { Filter, Header } from '../components';
+import { ExpensesTable, Filter, Header } from '../components';
 import { CurrentMonth, months } from '../helpers';
 import { Expense, getExpenses, getExpensesByMonth } from '../services';
 
@@ -24,23 +24,10 @@ function DashboardPage() {
           year: date.slice(0, 4),
           month: date.slice(5),
         });
-      }
-    })();
-  }, []);
-
-  useEffect(() => {
-    (async function () {
-      if (date) {
         setExpenses(await getExpensesByMonth(date));
-        setCurrMonth({
-          year: date.slice(0, 4),
-          month: date.slice(5),
-        });
       }
     })();
   }, [date]);
-
-  console.log(expenses);
 
   return (
     <Container maxWidth='lg'>
@@ -53,8 +40,16 @@ function DashboardPage() {
             handleChange={navigate}
           />
         )}
+        <Box component='span'>
+          Despesa total:{' '}
+          <strong>
+            {expenses
+              .reduce((acc, curr) => acc + curr.valor, 0)
+              .toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
+          </strong>
+        </Box>
       </Header>
-      dashboard page
+      <ExpensesTable expenses={expenses} />
     </Container>
   );
 }
