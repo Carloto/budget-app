@@ -1,33 +1,25 @@
 import { Box, Container } from '@mui/material';
-import { useEffect, useState } from 'react';
+import Tab from '@mui/material/Tab';
+import Tabs from '@mui/material/Tabs';
+import { useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { ExpensesTable, Filter, Header } from '../components';
-import { CurrentMonth, months } from '../helpers';
-import { Expense, getExpenses, getExpensesByMonth } from '../services';
+import { SummaryTable } from '../components/SummaryTable';
+import { TabPanel } from '../components/TabPanel';
+import { months } from '../helpers';
+import { useBudget } from '../hooks/budgetHook';
 
 function DashboardPage() {
-  const [expenses, setExpenses] = useState<Expense[]>([]);
-  const [years, setYears] = useState<string[]>([]);
-  const [currMonth, setCurrMonth] = useState<CurrentMonth>();
-
-  const navigate = useNavigate();
   const { date } = useParams();
+  const navigate = useNavigate();
 
-  useEffect(() => {
-    (async function () {
-      const expenses = await getExpenses();
-      setYears(
-        Array.from(new Set(expenses.map((expense) => expense.mes.slice(0, 4))))
-      );
-      if (date) {
-        setCurrMonth({
-          year: date.slice(0, 4),
-          month: date.slice(5),
-        });
-        setExpenses(await getExpensesByMonth(date));
-      }
-    })();
-  }, [date]);
+  const { expenses, years, currMonth, summary } = useBudget(date);
+
+  const [value, setValue] = useState(0);
+
+  const handleChange = (_event: React.SyntheticEvent, newValue: number) => {
+    setValue(newValue);
+  };
 
   return (
     <Container maxWidth='lg'>
@@ -49,9 +41,34 @@ function DashboardPage() {
           </strong>
         </Box>
       </Header>
-      <ExpensesTable expenses={expenses} />
+      <Box sx={{ width: '100%' }}>
+        <Box>
+          <Tabs
+            value={value}
+            onChange={handleChange}
+            aria-label='Despesas'
+            centered
+          >
+            <Tab label='Resumo' {...tabProps(0)} />
+            <Tab label='Detalhes' {...tabProps(1)} />
+          </Tabs>
+        </Box>
+        <TabPanel value={value} index={0}>
+          <ExpensesTable expenses={expenses} />
+        </TabPanel>
+        <TabPanel value={value} index={1}>
+          <SummaryTable summary={summary} />
+        </TabPanel>
+      </Box>
     </Container>
   );
 }
 
 export { DashboardPage };
+
+function tabProps(index: number) {
+  return {
+    id: `budget-tab-${index}`,
+    'aria-controls': `budget-tabpanel-${index}`,
+  };
+}

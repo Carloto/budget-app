@@ -1,3 +1,5 @@
+import { baseUrl } from '.';
+
 export interface Expense {
   id: number;
   descricao: string;
@@ -7,14 +9,16 @@ export interface Expense {
   dia: string;
 }
 
-const baseUrl = 'http://localhost:3001';
-
 export async function getExpenses(): Promise<Expense[]> {
-  const response = await fetch(`${baseUrl}/despesas?_sort=mes`);
+  const response = await fetch(`${baseUrl}/despesas?_sort=mes`, {
+    credentials: 'include',
+  });
   return response.json();
 }
 
 export async function getExpensesByMonth(month: string): Promise<Expense[]> {
-  const response = await fetch(`${baseUrl}/despesas?mes=${month}&_sort=dia`);
+  const response = await fetch(`${baseUrl}/despesas?mes=${month}&_sort=dia`, {
+    credentials: 'include',
+  });
   return response.json();
 }
